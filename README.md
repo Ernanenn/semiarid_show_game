@@ -126,7 +126,7 @@ O projeto segue uma arquitetura moderna baseada em **features** (funcionalidades
 - **Services Layer**: Abstração de lógica de negócio e comunicação com API
 - **Shared Code**: Componentes UI, utilitários, constantes e types compartilhados
 
-Veja mais detalhes em `ARCHITECTURE.md` e `REFACTORING_SUMMARY.md`.
+Veja mais detalhes em `ARCHITECTURE.md`.
 
 ## API Endpoints
 
