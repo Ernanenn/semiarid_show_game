@@ -113,6 +113,10 @@ function App() {
       });
     } catch (error) {
       console.error('Erro ao salvar score:', error);
+      // Log adicional para debug
+      if (error.message.includes('Failed to fetch')) {
+        console.error('Não foi possível conectar ao backend. Verifique se a API está rodando e se VITE_API_URL está configurado.');
+      }
       // Não bloqueia a exibição do resultado mesmo se falhar
     }
   };

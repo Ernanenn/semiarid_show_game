@@ -28,7 +28,19 @@ class ApiClient {
 
       return await response.json();
     } catch (error) {
-      console.error(`Erro na requisição ${endpoint}:`, error);
+      // Log mais detalhado para debug
+      console.error(`Erro na requisição ${endpoint}:`, {
+        url,
+        baseUrl: this.baseUrl,
+        error: error.message,
+        fullError: error
+      });
+      
+      // Se for erro de rede (CORS, conexão), mostrar mensagem mais clara
+      if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+        console.warn('Erro de conexão com a API. Verifique se VITE_API_URL está configurado corretamente.');
+      }
+      
       throw error;
     }
   }
