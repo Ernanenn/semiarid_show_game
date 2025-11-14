@@ -9,5 +9,8 @@ logs/
 **/*.log
 coverage/
 dist/
-data/
+# Database files (but allow src/data/questions.js)
+data/*.sqlite
+data/*.db
+!src/data/
 
