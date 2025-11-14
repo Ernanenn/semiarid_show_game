@@ -201,7 +201,7 @@ Este projeto está configurado para deploy no Render. Siga os passos abaixo:
 3. Configure o serviço:
    - **Name**: `show-semiarido` (ou o nome que preferir)
    - **Environment**: `Node`
-   - **Build Command**: `npm ci --include=dev && npm run build`
+   - **Build Command**: `npm install && npm run build`
    - **Start Command**: `npm start`
    - **Plan**: Escolha o plano gratuito ou pago
 
