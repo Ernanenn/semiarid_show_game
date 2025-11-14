@@ -205,19 +205,33 @@ Este projeto está configurado para deploy no Render. Siga os passos abaixo:
    - **Start Command**: `npm start`
    - **Plan**: Escolha o plano gratuito ou pago
 
-### 3. Configurar Variáveis de Ambiente
-No painel do serviço, vá em "Environment" e adicione:
+### 3. Criar Banco de Dados PostgreSQL
+1. No dashboard do Render, clique em "New +" → "PostgreSQL"
+2. Configure:
+   - **Name**: `show-semiarido-db` (ou o nome que preferir)
+   - **Database**: `semiarido_quiz` (ou deixe o padrão)
+   - **User**: Deixe o padrão ou escolha um nome
+   - **Region**: Escolha a região mais próxima
+   - **Plan**: Escolha o plano (Free tier disponível)
+3. Clique em "Create Database"
+4. **Anote a Internal Database URL** que será fornecida
+
+### 4. Configurar Variáveis de Ambiente
+No painel do serviço web, vá em "Environment" e adicione:
 
 ```
 NODE_ENV=production
 PORT=10000
-DATABASE_PATH=/opt/render/project/src/data/app.sqlite
+DATABASE_URL=<Internal Database URL do passo anterior>
 CLIENT_ORIGIN=https://seu-app.onrender.com
 ```
 
-**Importante**: Substitua `seu-app.onrender.com` pela URL que o Render fornecer após o deploy.
+**Importante**: 
+- Substitua `<Internal Database URL>` pela URL interna do banco PostgreSQL criado
+- Substitua `seu-app.onrender.com` pela URL que o Render fornecer após o deploy
+- **Ou** conecte o banco diretamente: No painel do serviço web, vá em "Environment" → "Add from" → Selecione o banco criado (isso adiciona `DATABASE_URL` automaticamente)
 
-### 4. Deploy
+### 5. Deploy
 1. Clique em "Create Web Service"
 2. O Render irá:
    - Instalar as dependências

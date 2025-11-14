@@ -5,7 +5,7 @@ export class ScoresRepository {
 
   async createPlayer({ name, location, state }) {
     const result = await this.db.run(
-      `INSERT INTO players (name, location, state) VALUES (?, ?, ?)`,
+      `INSERT INTO players (name, location, state) VALUES (?, ?, ?) RETURNING id`,
       [name || '', location || null, state || null]
     );
     return result.lastInsertRowid;
@@ -13,7 +13,7 @@ export class ScoresRepository {
 
   async createScore({ playerId, scorePercentage, correctAnswers, totalQuestions }) {
     const result = await this.db.run(
-      `INSERT INTO scores (player_id, score_percentage, correct_answers, total_questions) VALUES (?, ?, ?, ?)`,
+      `INSERT INTO scores (player_id, score_percentage, correct_answers, total_questions) VALUES (?, ?, ?, ?) RETURNING id`,
       [playerId, scorePercentage, correctAnswers, totalQuestions]
     );
     return result.lastInsertRowid;
