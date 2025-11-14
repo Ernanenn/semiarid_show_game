@@ -12,7 +12,9 @@
         "dev:server": "nodemon server/index.js",
         "start:server": "node server/index.js",
         "dev:full": "concurrently \"npm run dev\" \"npm run dev:server\"",
-        "setup:db": "node -e \"import('./server/db/sqlite.js').then(m => m.initDatabase())\""
+        "setup:db": "node -e \"import('./server/db/sqlite.js').then(m => m.initDatabase())\"",
+        "start": "npm run setup:db && node server/index.js",
+        "postbuild": "npm run setup:db"
     },
     "dependencies": {
     "cors": "^2.8.5",

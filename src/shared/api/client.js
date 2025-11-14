@@ -1,4 +1,7 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+// In production, use relative URL (same origin)
+// In development, use VITE_API_URL or default to localhost
+const API_BASE_URL = import.meta.env.VITE_API_URL || 
+  (import.meta.env.PROD ? '' : 'http://localhost:4000');
 
 class ApiClient {
   constructor(baseUrl) {

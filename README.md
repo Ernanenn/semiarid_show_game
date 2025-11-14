@@ -187,6 +187,53 @@ Edite o arquivo `src/data/questions.js` e adicione novas perguntas no formato:
 }
 ```
 
+## Deploy no Render
+
+Este projeto está configurado para deploy no Render. Siga os passos abaixo:
+
+### 1. Criar Conta no Render
+1. Acesse [render.com](https://render.com) e crie uma conta (pode usar GitHub)
+2. Conecte seu repositório GitHub
+
+### 2. Criar Novo Web Service
+1. No dashboard do Render, clique em "New +" → "Web Service"
+2. Conecte o repositório `semiarid_show_game`
+3. Configure o serviço:
+   - **Name**: `show-semiarido` (ou o nome que preferir)
+   - **Environment**: `Node`
+   - **Build Command**: `npm install && npm run build`
+   - **Start Command**: `npm start`
+   - **Plan**: Escolha o plano gratuito ou pago
+
+### 3. Configurar Variáveis de Ambiente
+No painel do serviço, vá em "Environment" e adicione:
+
+```
+NODE_ENV=production
+PORT=10000
+DATABASE_PATH=/opt/render/project/src/data/app.sqlite
+CLIENT_ORIGIN=https://seu-app.onrender.com
+```
+
+**Importante**: Substitua `seu-app.onrender.com` pela URL que o Render fornecer após o deploy.
+
+### 4. Deploy
+1. Clique em "Create Web Service"
+2. O Render irá:
+   - Instalar as dependências
+   - Fazer o build do frontend
+   - Inicializar o banco de dados
+   - Iniciar o servidor
+
+### 5. Acessar a Aplicação
+Após o deploy, sua aplicação estará disponível em:
+`https://seu-app.onrender.com`
+
+**Nota**: O plano gratuito do Render coloca o serviço em "sleep" após 15 minutos de inatividade. O primeiro acesso após o sleep pode demorar alguns segundos para "acordar" o serviço.
+
+### Alternativa: Usar render.yaml
+O projeto inclui um arquivo `render.yaml` que pode ser usado para configurar o serviço automaticamente. Basta fazer o deploy e o Render usará as configurações do arquivo.
+
 ## Contribuição
 Contribuições são bem-vindas! Se você tiver sugestões de melhorias ou correções de bugs, sinta-se à vontade para abrir uma issue ou enviar um pull request.
 
