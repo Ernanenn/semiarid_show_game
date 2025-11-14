@@ -125,3 +125,8 @@ export async function getDatabase() {
   return databaseInstance;
 }
 
+export async function initDatabase() {
+  await getDatabase();
+  console.log('Database initialized and migrations applied.');
+}
+
