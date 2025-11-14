@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 import { env } from './config/env.js';
 import { createScoresRouter } from './routes/scores.js';
 
@@ -37,12 +38,23 @@ export function createApp({ database }) {
 
   // Serve static files from the React app build
   const distPath = path.resolve(projectRoot, 'dist');
-  app.use(express.static(distPath));
+  
+  // Check if dist directory exists
+  if (fs.existsSync(distPath)) {
+    app.use(express.static(distPath));
 
-  // Serve React app for all non-API routes
-  app.get('*', (_req, res) => {
-    res.sendFile(path.resolve(distPath, 'index.html'));
-  });
+    // Serve React app for all non-API routes
+    app.get('*', (_req, res) => {
+      const indexPath = path.resolve(distPath, 'index.html');
+      if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+      } else {
+        res.status(404).json({ error: 'Frontend not found' });
+      }
+    });
+  } else {
+    console.warn('Dist directory not found at:', distPath);
+  }
 
   return app;
 }
