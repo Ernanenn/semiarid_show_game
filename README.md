@@ -15,18 +15,28 @@
 ## Tecnologias Utilizadas
 * **Frontend:**
   - React 18
+  - TypeScript
   - Vite
   - Styled Components
   - React Hooks
+  - Vitest (testes)
 
 * **Backend:**
   - Node.js
   - Express
   - SQLite3 (better-sqlite3)
+  - Swagger/OpenAPI (documentação)
+
+* **Ferramentas:**
+  - TypeScript
+  - Prettier (formatação)
+  - ESLint (linting)
+  - Vitest (testes unitários e integração)
 
 ## Pré-requisitos
-- Node.js 18+ instalado
-- npm ou yarn
+- Node.js 20.x, 22.x ou 24.x instalado
+- npm 10+ ou yarn
+- Visual Studio Build Tools (Windows) - necessário para compilar `better-sqlite3`
 
 ## Como Executar Localmente
 
@@ -73,14 +83,28 @@ Abra seu navegador e acesse: **http://localhost:3000**
 
 ## Scripts Disponíveis
 
+### Desenvolvimento
 - `npm run dev` - Inicia apenas o frontend (Vite)
 - `npm run dev:server` - Inicia apenas o backend (Express com nodemon)
 - `npm run dev:full` - Inicia frontend e backend simultaneamente
-- `npm run build` - Gera build de produção do frontend
+
+### Build e Deploy
+- `npm run build` - Gera build de produção do frontend (TypeScript + Vite)
 - `npm run preview` - Visualiza o build de produção
 - `npm run start:server` - Inicia o backend em modo produção
+
+### Qualidade de Código
 - `npm run lint` - Executa o linter
 - `npm run lint:fix` - Corrige automaticamente problemas do linter
+- `npm run format` - Formata o código com Prettier
+- `npm run format:check` - Verifica formatação sem alterar arquivos
+- `npm run type-check` - Verifica tipos TypeScript sem gerar build
+
+### Testes
+- `npm test` - Executa todos os testes
+- `npm run test:watch` - Executa testes em modo watch
+- `npm run test:ui` - Executa testes com interface gráfica
+- `npm run test:coverage` - Executa testes com relatório de cobertura
 
 ## Estrutura do Projeto
 
@@ -102,16 +126,26 @@ Abra seu navegador e acesse: **http://localhost:3000**
 │   │   ├── components/       # Componentes reutilizáveis (UI)
 │   │   ├── constants/        # Constantes
 │   │   ├── data/            # Dados do quiz
+│   │   ├── types/           # Tipos TypeScript
 │   │   └── utils/            # Utilitários
 │   ├── assets/              # Assets estáticos
 │   ├── styles/              # Tema e estilos globais
-│   └── main.jsx             # Entry point
+│   ├── test/                # Configuração de testes
+│   ├── types/               # Definições de tipos
+│   ├── App.tsx              # Componente principal
+│   └── main.tsx            # Entry point
 ├── server/                    # Código fonte do backend
 │   ├── config/              # Configurações
 │   ├── db/                  # Banco de dados SQLite
+│   │   ├── sqlite3.js       # Implementação SQLite3
+│   │   └── schema.sql       # Schema do banco
 │   ├── repositories/        # Camada de dados
-│   └── routes/              # Rotas da API
+│   ├── routes/              # Rotas da API
+│   └── swagger.js           # Configuração Swagger
 ├── data/                     # Banco de dados SQLite (gerado automaticamente)
+├── tsconfig.json            # Configuração TypeScript
+├── vite.config.ts           # Configuração Vite
+├── vitest.config.ts         # Configuração Vitest
 └── package.json             # Dependências e scripts
 ```
 
@@ -169,28 +203,47 @@ Este projeto está configurado para deploy separado:
    - **Start Command**: `npm start`
    - **Plan**: Escolha o plano gratuito ou pago
 
-#### 3. Configurar Variáveis de Ambiente
+#### 3. Configurar Volume Persistente (IMPORTANTE)
+Para garantir que os dados não sejam perdidos quando o container reiniciar:
+
+1. No painel do serviço, vá em "Settings" → "Disk"
+2. Clique em "Add Disk"
+3. Configure:
+   - **Name**: `database-storage`
+   - **Mount Path**: `/opt/render/project/src/data`
+   - **Size**: 1 GB (suficiente para o banco SQLite)
+
+**⚠️ IMPORTANTE**: Sem o volume persistente, os dados serão perdidos a cada reinicialização do container!
+
+#### 4. Configurar Variáveis de Ambiente
 No painel do serviço, vá em "Environment" e adicione:
 
 ```
 NODE_ENV=production
 PORT=10000
-DATABASE_PATH=./data/app.sqlite
+DATABASE_PATH=/opt/render/project/src/data/app.sqlite
 CLIENT_ORIGIN=https://seu-app.netlify.app
 ```
 
 **Importante**: 
 - Substitua `seu-app.netlify.app` pela URL do Netlify que você receberá após o deploy do frontend
 - Você pode atualizar essa variável depois do deploy do frontend
+- O `DATABASE_PATH` deve apontar para o caminho do volume persistente
 
-#### 4. Deploy
+#### 5. Deploy
 1. Clique em "Create Web Service"
 2. O Render irá:
    - Instalar as dependências
-   - Inicializar o banco de dados
+   - Criar o volume persistente
+   - Inicializar o banco de dados no volume
    - Iniciar o servidor
 
 3. **Anote a URL do backend** (ex: `https://show-semiarido-api.onrender.com`)
+
+**Nota**: Se você já tem um serviço criado sem volume persistente:
+- Vá em "Settings" → "Disk" e adicione o volume
+- Atualize a variável `DATABASE_PATH` para o caminho do volume
+- Faça um redeploy
 
 ### Deploy do Frontend no Netlify
 
@@ -251,25 +304,52 @@ O banco de dados SQLite é criado automaticamente na primeira execução em `./d
 - **scores**: Armazena pontuações dos jogadores
 - **answers**: (Reservado para futuras funcionalidades)
 
-**Nota sobre persistência no Render**: No plano gratuito do Render, o sistema de arquivos é efêmero. Os dados persistem enquanto o serviço está rodando, mas podem ser perdidos em novos deploys ou reinicializações. Para persistência garantida, considere usar um banco de dados gerenciado (PostgreSQL) ou um serviço de armazenamento persistente.
+**Nota sobre persistência no Render**: 
+- ✅ **Com volume persistente**: Os dados são mantidos mesmo após reinicializações e novos deploys
+- ⚠️ **Sem volume persistente**: O sistema de arquivos é efêmero e os dados serão perdidos quando o container reiniciar
+- 📝 **Configuração**: Veja a seção "Deploy do Backend no Render" acima para configurar o volume persistente
+- 💡 **Alternativa**: Para aplicações críticas, considere migrar para PostgreSQL (banco gerenciado pelo Render)
 
 ## Desenvolvimento
 
 ### Adicionar Novas Perguntas
-Edite o arquivo `src/shared/data/questions.js` e adicione novas perguntas no formato:
+Edite o arquivo `src/shared/data/questions.ts` e adicione novas perguntas no formato:
 
-```javascript
+```typescript
 {
-  id: 'pergunta-1',
   question: 'Sua pergunta aqui?',
   answers: [
-    { id: 'a', text: 'Resposta A', correct: false },
-    { id: 'b', text: 'Resposta B', correct: true },
-    { id: 'c', text: 'Resposta C', correct: false },
-    { id: 'd', text: 'Resposta D', correct: false }
+    { text: 'Resposta A', correct: false },
+    { text: 'Resposta B', correct: true },
+    { text: 'Resposta C', correct: false },
+    { text: 'Resposta D', correct: false }
   ]
 }
 ```
+
+**Nota:** O `id` é gerado automaticamente. Veja `ARCHITECTURE.md` para mais detalhes sobre a estrutura do projeto.
+
+## Testes
+
+O projeto inclui testes unitários e de integração usando Vitest e Testing Library:
+
+```bash
+# Executar todos os testes
+npm test
+
+# Executar testes em modo watch
+npm run test:watch
+
+# Executar testes com UI
+npm run test:ui
+
+# Ver cobertura de testes
+npm run test:coverage
+```
+
+## Documentação Adicional
+
+- **Arquitetura**: Veja `ARCHITECTURE.md` para detalhes sobre a estrutura do projeto
 
 ## Contribuição
 Contribuições são bem-vindas! Se você tiver sugestões de melhorias ou correções de bugs, sinta-se à vontade para abrir uma issue ou enviar um pull request.

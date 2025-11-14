@@ -4,13 +4,19 @@ services:
     env: node
     buildCommand: npm install
     startCommand: npm start
+    # NOTA: Volume persistente deve ser configurado manualmente no painel do Render
+    # Settings → Disk → Add Disk
+    # Mount Path: /opt/render/project/src/data
+    # Size: 1 GB
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
+      # IMPORTANTE: Configure o volume persistente no painel e use este caminho
+      # Se não configurar volume, use: ./data/app.sqlite (dados serão perdidos ao reiniciar)
       - key: DATABASE_PATH
-        value: ./data/app.sqlite
+        value: /opt/render/project/src/data/app.sqlite
       - key: CLIENT_ORIGIN
         sync: false
 

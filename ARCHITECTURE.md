@@ -27,23 +27,26 @@ src/
 │   ├── types/            # Types/interfaces
 │   └── utils/            # Utilitários
 ├── assets/               # Assets estáticos
-├── styles/               # Estilos globais
-└── main.jsx              # Entry point
+├── styles/               # Estilos globais (GlobalStyle.ts, theme.ts)
+├── test/                 # Configuração de testes (setup.ts)
+├── types/                # Definições de tipos TypeScript
+├── App.tsx               # Componente principal
+└── main.tsx              # Entry point
 ```
 
 ### Backend (`server/`)
 
 ```
 server/
-├── config/               # Configurações
-├── database/            # Database
-│   ├── migrations/      # Migrations
-│   └── sqlite.js        # Implementação SQLite
-├── domain/              # Lógica de domínio
-│   └── repositories/    # Repositories
-├── infrastructure/      # Infraestrutura
-│   └── http/           # HTTP (routes, controllers)
-└── index.js            # Entry point
+├── config/               # Configurações (env.js)
+├── db/                  # Banco de dados
+│   ├── sqlite3.js      # Implementação SQLite3 (better-sqlite3)
+│   └── schema.sql      # Schema do banco de dados
+├── repositories/        # Camada de dados (scoresRepository.js)
+├── routes/              # Rotas da API (scores.js)
+├── swagger.js           # Configuração Swagger/OpenAPI
+├── app.js               # Configuração Express
+└── index.js             # Entry point
 ```
 
 ## Princípios Arquiteturais
