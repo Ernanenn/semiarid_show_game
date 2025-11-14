@@ -1,12 +1,11 @@
 import { createServer } from 'http';
 import { env } from './config/env.js';
 import { createApp } from './app.js';
-import { getDatabase } from './db/postgres.js';
-import { closeDatabase } from './db/postgres.js';
+import { getDatabase, closeDatabase } from './db/sqlite3.js';
 
 async function bootstrap() {
   try {
-    const database = await getDatabase();
+    const database = getDatabase();
     const app = createApp({ database });
     const server = createServer(app);
 
@@ -14,7 +13,7 @@ async function bootstrap() {
       // eslint-disable-next-line no-console
       console.log(`API disponível em http://localhost:${env.port}`);
       // eslint-disable-next-line no-console
-      console.log('Database: PostgreSQL');
+      console.log('Database: SQLite3');
     });
 
     // Graceful shutdown

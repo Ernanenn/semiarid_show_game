@@ -22,7 +22,7 @@
 * **Backend:**
   - Node.js
   - Express
-  - SQLite (sql.js)
+  - SQLite3 (better-sqlite3)
 
 ## Pré-requisitos
 - Node.js 18+ instalado
@@ -86,7 +86,6 @@ Abra seu navegador e acesse: **http://localhost:3000**
 
 ```
 ├── src/                          # Código fonte do frontend
-│   ├── app/                     # Configuração da aplicação
 │   ├── features/                 # Features organizadas por domínio
 │   │   ├── game/               # Feature do jogo
 │   │   │   ├── components/     # QuizScreen, GameOverScreen
@@ -103,7 +102,6 @@ Abra seu navegador e acesse: **http://localhost:3000**
 │   │   ├── components/       # Componentes reutilizáveis (UI)
 │   │   ├── constants/        # Constantes
 │   │   ├── data/            # Dados do quiz
-│   │   ├── types/           # Types/interfaces
 │   │   └── utils/            # Utilitários
 │   ├── assets/              # Assets estáticos
 │   ├── styles/              # Tema e estilos globais
@@ -124,7 +122,7 @@ O projeto segue uma arquitetura moderna baseada em **features** (funcionalidades
 - **Features**: Organização por domínio/funcionalidade (game, scores, welcome)
 - **Hooks Customizados**: Lógica de negócio reutilizável
 - **Services Layer**: Abstração de lógica de negócio e comunicação com API
-- **Shared Code**: Componentes UI, utilitários, constantes e types compartilhados
+- **Shared Code**: Componentes UI, utilitários, constantes compartilhados
 
 Veja mais detalhes em `ARCHITECTURE.md`.
 
@@ -148,8 +146,92 @@ Veja mais detalhes em `ARCHITECTURE.md`.
 
 - `GET /api/scores/top?limit=10` - Retorna o ranking (top N pontuações)
 
+## Deploy Separado (Frontend + Backend)
+
+Este projeto está configurado para deploy separado:
+- **Frontend**: Netlify
+- **Backend**: Render (com SQLite3)
+
+### Deploy do Backend no Render
+
+#### 1. Criar Conta no Render
+1. Acesse [render.com](https://render.com) e crie uma conta (pode usar GitHub)
+2. Conecte seu repositório GitHub
+
+#### 2. Criar Novo Web Service (Backend)
+1. No dashboard do Render, clique em "New +" → "Web Service"
+2. Conecte o repositório `semiarid_show_game`
+3. Configure o serviço:
+   - **Name**: `show-semiarido-api` (ou o nome que preferir)
+   - **Root Directory**: Deixe vazio (raiz do projeto)
+   - **Environment**: `Node`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+   - **Plan**: Escolha o plano gratuito ou pago
+
+#### 3. Configurar Variáveis de Ambiente
+No painel do serviço, vá em "Environment" e adicione:
+
+```
+NODE_ENV=production
+PORT=10000
+DATABASE_PATH=./data/app.sqlite
+CLIENT_ORIGIN=https://seu-app.netlify.app
+```
+
+**Importante**: 
+- Substitua `seu-app.netlify.app` pela URL do Netlify que você receberá após o deploy do frontend
+- Você pode atualizar essa variável depois do deploy do frontend
+
+#### 4. Deploy
+1. Clique em "Create Web Service"
+2. O Render irá:
+   - Instalar as dependências
+   - Inicializar o banco de dados
+   - Iniciar o servidor
+
+3. **Anote a URL do backend** (ex: `https://show-semiarido-api.onrender.com`)
+
+### Deploy do Frontend no Netlify
+
+#### 1. Criar Conta no Netlify
+1. Acesse [netlify.com](https://netlify.com) e crie uma conta (pode usar GitHub)
+2. Conecte seu repositório GitHub
+
+#### 2. Criar Novo Site
+1. No dashboard do Netlify, clique em "Add new site" → "Import an existing project"
+2. Selecione o repositório `semiarid_show_game`
+3. Configure o build:
+   - **Build command**: `npm run build`
+   - **Publish directory**: `dist`
+   - **Base directory**: (deixe vazio)
+
+#### 3. Configurar Variáveis de Ambiente
+No painel do site, vá em "Site settings" → "Environment variables" e adicione:
+
+```
+VITE_API_URL=https://show-semiarido-api.onrender.com
+```
+
+**Importante**: Substitua `show-semiarido-api.onrender.com` pela URL real do seu backend no Render.
+
+#### 4. Deploy
+1. Clique em "Deploy site"
+2. O Netlify irá:
+   - Instalar as dependências
+   - Fazer o build do frontend
+   - Publicar o site
+
+3. **Anote a URL do frontend** (ex: `https://show-semiarido.netlify.app`)
+
+#### 5. Atualizar CLIENT_ORIGIN no Render
+Após obter a URL do Netlify, volte ao Render e atualize a variável `CLIENT_ORIGIN`:
+- Vá em "Environment" do serviço backend
+- Atualize `CLIENT_ORIGIN` para a URL do Netlify
+- O Render fará um redeploy automaticamente
+
 ## Como Jogar
-1. Acesse http://localhost:3000 no navegador
+1. Acesse a URL do Netlify no navegador
 2. Digite seu nome, cidade e estado nos campos solicitados
 3. Clique no botão "Iniciar Quiz"
 4. As perguntas e alternativas serão lidas automaticamente
@@ -169,10 +251,12 @@ O banco de dados SQLite é criado automaticamente na primeira execução em `./d
 - **scores**: Armazena pontuações dos jogadores
 - **answers**: (Reservado para futuras funcionalidades)
 
+**Nota sobre persistência no Render**: No plano gratuito do Render, o sistema de arquivos é efêmero. Os dados persistem enquanto o serviço está rodando, mas podem ser perdidos em novos deploys ou reinicializações. Para persistência garantida, considere usar um banco de dados gerenciado (PostgreSQL) ou um serviço de armazenamento persistente.
+
 ## Desenvolvimento
 
 ### Adicionar Novas Perguntas
-Edite o arquivo `src/data/questions.js` e adicione novas perguntas no formato:
+Edite o arquivo `src/shared/data/questions.js` e adicione novas perguntas no formato:
 
 ```javascript
 {
@@ -186,67 +270,6 @@ Edite o arquivo `src/data/questions.js` e adicione novas perguntas no formato:
   ]
 }
 ```
-
-## Deploy no Render
-
-Este projeto está configurado para deploy no Render. Siga os passos abaixo:
-
-### 1. Criar Conta no Render
-1. Acesse [render.com](https://render.com) e crie uma conta (pode usar GitHub)
-2. Conecte seu repositório GitHub
-
-### 2. Criar Novo Web Service
-1. No dashboard do Render, clique em "New +" → "Web Service"
-2. Conecte o repositório `semiarid_show_game`
-3. Configure o serviço:
-   - **Name**: `show-semiarido` (ou o nome que preferir)
-   - **Environment**: `Node`
-   - **Build Command**: `npm install && npm run build`
-   - **Start Command**: `npm start`
-   - **Plan**: Escolha o plano gratuito ou pago
-
-### 3. Criar Banco de Dados PostgreSQL
-1. No dashboard do Render, clique em "New +" → "PostgreSQL"
-2. Configure:
-   - **Name**: `show-semiarido-db` (ou o nome que preferir)
-   - **Database**: `semiarido_quiz` (ou deixe o padrão)
-   - **User**: Deixe o padrão ou escolha um nome
-   - **Region**: Escolha a região mais próxima
-   - **Plan**: Escolha o plano (Free tier disponível)
-3. Clique em "Create Database"
-4. **Anote a Internal Database URL** que será fornecida
-
-### 4. Configurar Variáveis de Ambiente
-No painel do serviço web, vá em "Environment" e adicione:
-
-```
-NODE_ENV=production
-PORT=10000
-DATABASE_URL=<Internal Database URL do passo anterior>
-CLIENT_ORIGIN=https://seu-app.onrender.com
-```
-
-**Importante**: 
-- Substitua `<Internal Database URL>` pela URL interna do banco PostgreSQL criado
-- Substitua `seu-app.onrender.com` pela URL que o Render fornecer após o deploy
-- **Ou** conecte o banco diretamente: No painel do serviço web, vá em "Environment" → "Add from" → Selecione o banco criado (isso adiciona `DATABASE_URL` automaticamente)
-
-### 5. Deploy
-1. Clique em "Create Web Service"
-2. O Render irá:
-   - Instalar as dependências
-   - Fazer o build do frontend
-   - Inicializar o banco de dados
-   - Iniciar o servidor
-
-### 5. Acessar a Aplicação
-Após o deploy, sua aplicação estará disponível em:
-`https://seu-app.onrender.com`
-
-**Nota**: O plano gratuito do Render coloca o serviço em "sleep" após 15 minutos de inatividade. O primeiro acesso após o sleep pode demorar alguns segundos para "acordar" o serviço.
-
-### Alternativa: Usar render.yaml
-O projeto inclui um arquivo `render.yaml` que pode ser usado para configurar o serviço automaticamente. Basta fazer o deploy e o Render usará as configurações do arquivo.
 
 ## Contribuição
 Contribuições são bem-vindas! Se você tiver sugestões de melhorias ou correções de bugs, sinta-se à vontade para abrir uma issue ou enviar um pull request.
